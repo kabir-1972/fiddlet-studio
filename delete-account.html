@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delete Account — Fiddlet Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne+Mono&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #080810;
+  --deep: #0d0d1a;
+  --panel: #11111f;
+  --panel-2: #14141f;
+  --border: rgba(255,255,255,0.07);
+  --border-red: rgba(255,60,60,0.25);
+  --neon: #00ffe7;
+  --neon-dim: rgba(0,255,231,0.1);
+  --orange: #ff6b2b;
+  --red: #ff3c3c;
+  --red-dim: rgba(255,60,60,0.08);
+  --red-glow: rgba(255,60,60,0.3);
+  --white: #eef0ff;
+  --muted: rgba(238,240,255,0.45);
+  --faint: rgba(238,240,255,0.18);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--black);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* scanlines */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+  pointer-events: none; z-index: 1000;
+}
+
+/* grain */
+body::after {
+  content: '';
+  position: fixed;
+  inset: -200%; width: 400%; height: 400%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 999; opacity: 0.35;
+  animation: grain 0.4s steps(1) infinite;
+}
+@keyframes grain {
+  0%,100%{transform:translate(0,0)} 10%{transform:translate(-2%,-3%)} 20%{transform:translate(3%,2%)}
+  30%{transform:translate(-1%,4%)} 40%{transform:translate(2%,-1%)} 50%{transform:translate(-3%,3%)}
+  60%{transform:translate(1%,-2%)} 70%{transform:translate(-2%,1%)} 80%{transform:translate(3%,-3%)}
+  90%{transform:translate(-1%,2%)}
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 20px 48px;
+  display: flex; justify-content: space-between; align-items: center;
+  background: linear-gradient(to bottom, rgba(8,8,16,0.97), transparent);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none;
+}
+.logo-mark {
+  width: 36px; height: 36px;
+  border: 2px solid var(--neon); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 900;
+  color: var(--neon);
+  box-shadow: 0 0 12px rgba(0,255,231,0.35), inset 0 0 12px rgba(0,255,231,0.05);
+}
+.logo-text {
+  font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700;
+  color: var(--white); letter-spacing: 0.15em; text-transform: uppercase;
+}
+.logo-text span { color: var(--neon); }
+
+.nav-back {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Syne Mono', monospace; font-size: 11px;
+  color: var(--muted); text-decoration: none; letter-spacing: 0.1em;
+  text-transform: uppercase; transition: color 0.15s;
+}
+.nav-back:hover { color: var(--neon); }
+.nav-back::before { content: '←'; }
+
+/* ── PAGE LAYOUT ── */
+.page-wrap {
+  min-height: 100vh;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 120px 24px 80px;
+  position: relative;
+}
+
+/* bg orb - red tint */
+.page-orb {
+  position: fixed; top: 20%; left: 50%;
+  transform: translateX(-50%);
+  width: 700px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255,60,60,0.05), transparent 70%);
+  pointer-events: none; z-index: 0;
+  filter: blur(40px);
+}
+
+/* bg grid */
+.page-grid {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,60,60,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,60,60,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 60% 80% at 50% 40%, black, transparent);
+}
+
+.page-inner {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 560px;
+}
+
+/* ── BREADCRUMB ── */
+.breadcrumb {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Syne Mono', monospace; font-size: 10px;
+  color: var(--faint); letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 36px;
+  opacity: 0; animation: fade-up 0.5s 0.1s forwards;
+}
+.breadcrumb a { color: var(--faint); text-decoration: none; transition: color 0.15s; }
+.breadcrumb a:hover { color: var(--neon); }
+.breadcrumb-sep { color: rgba(255,255,255,0.12); }
+.breadcrumb-current { color: var(--red); }
+
+/* ── WARNING HEADER ── */
+.warning-header {
+  margin-bottom: 32px;
+  opacity: 0; animation: fade-up 0.5s 0.2s forwards;
+}
+.warning-icon-wrap {
+  width: 64px; height: 64px; margin-bottom: 24px;
+  border-radius: 16px;
+  background: var(--red-dim);
+  border: 1px solid var(--border-red);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.warning-icon-wrap::before {
+  content: '';
+  position: absolute; inset: -4px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,60,60,0.1);
+}
+.warning-icon {
+  font-size: 28px;
+  animation: icon-pulse 2.5s ease-in-out infinite;
+}
+@keyframes icon-pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+.warning-eyebrow {
+  font-family: 'Syne Mono', monospace; font-size: 10px;
+  color: var(--red); letter-spacing: 0.2em; text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.warning-eyebrow::before {
+  content: '';
+  display: inline-block; width: 20px; height: 1px;
+  background: var(--red);
+}
+.warning-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 900; letter-spacing: -0.5px; line-height: 1.1;
+  color: var(--white); margin-bottom: 14px;
+}
+.warning-title em { font-style: normal; color: var(--red); }
+.warning-sub {
+  font-size: 14.5px; line-height: 1.7; color: var(--muted);
+}
+
+/* ── ACCOUNT PREVIEW CARD ── */
+.account-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 14px;
+  opacity: 0; animation: fade-up 0.5s 0.3s forwards;
+}
+.account-avatar {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: linear-gradient(135deg, rgba(0,255,231,0.2), rgba(255,107,43,0.2));
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700;
+  color: var(--neon); flex-shrink: 0;
+}
+.account-info { flex: 1; min-width: 0; }
+.account-name {
+  font-weight: 600; font-size: 15px; color: var(--white);
+  margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.account-email {
+  font-family: 'Syne Mono', monospace; font-size: 12px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.account-badge {
+  font-family: 'Syne Mono', monospace; font-size: 9px;
+  color: var(--neon); background: var(--neon-dim);
+  border: 1px solid rgba(0,255,231,0.18);
+  padding: 3px 10px; border-radius: 100px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  white-space: nowrap; flex-shrink: 0;
+}
+
+/* ── CONSEQUENCES ── */
+.consequences-card {
+  background: var(--red-dim);
+  border: 1px solid var(--border-red);
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 24px;
+  opacity: 0; animation: fade-up 0.5s 0.4s forwards;
+}
+.consequences-title {
+  font-family: 'Orbitron', monospace; font-size: 11px;
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.consequences-title::before { content: '!'; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--red); font-size: 11px; flex-shrink: 0; }
+.consequence-list { display: flex; flex-direction: column; gap: 10px; }
+.consequence-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: 13.5px; line-height: 1.6; color: rgba(238,240,255,0.65);
+}
+.consequence-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--red); flex-shrink: 0; margin-top: 7px;
+  box-shadow: 0 0 6px var(--red-glow);
+}
+
+/* ── FORM CARD ── */
+.form-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  opacity: 0; animation: fade-up 0.5s 0.5s forwards;
+}
+.form-card-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel-2);
+}
+.form-card-title {
+  font-family: 'Orbitron', monospace; font-size: 11px;
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted);
+}
+.form-body { padding: 24px 22px; display: flex; flex-direction: column; gap: 20px; }
+
+/* FORM FIELDS */
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field-label {
+  font-family: 'Syne Mono', monospace; font-size: 11px;
+  color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.field-label span { color: var(--red); margin-left: 2px; }
+.field-input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 6px; outline: none;
+  padding: 13px 16px;
+  font-family: 'Syne Mono', monospace; font-size: 13px;
+  color: var(--white); letter-spacing: 0.05em;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+.field-input::placeholder { color: var(--faint); }
+.field-input:focus {
+  border-color: rgba(255,60,60,0.4);
+  box-shadow: 0 0 0 3px rgba(255,60,60,0.08);
+}
+.field-hint {
+  font-size: 12px; color: var(--faint); line-height: 1.55;
+}
+
+/* REASON SELECT */
+.field-select {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 6px; outline: none;
+  padding: 13px 16px;
+  font-family: 'Syne Mono', monospace; font-size: 13px;
+  color: var(--white); letter-spacing: 0.04em;
+  width: 100%; cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(238,240,255,0.3)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  transition: border-color 0.2s;
+}
+.field-select:focus { border-color: rgba(255,60,60,0.4); }
+.field-select option { background: #1a1a2e; color: var(--white); }
+
+/* CHECKBOX */
+.checkbox-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  cursor: pointer;
+}
+.checkbox-box {
+  width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;
+  border: 1px solid var(--border-red); border-radius: 4px;
+  background: var(--red-dim);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  cursor: pointer;
+}
+.checkbox-box.checked {
+  background: var(--red); border-color: var(--red);
+}
+.checkbox-check { color: white; font-size: 11px; display: none; }
+.checkbox-box.checked .checkbox-check { display: block; }
+.checkbox-label {
+  font-size: 13.5px; line-height: 1.6; color: rgba(238,240,255,0.6);
+}
+.checkbox-label strong { color: var(--white); font-weight: 600; }
+
+/* DIVIDER */
+.form-divider {
+  height: 1px; background: var(--border); margin: 4px 0;
+}
+
+/* CONFIRM INPUT */
+.confirm-wrap {
+  position: relative;
+}
+.confirm-match-badge {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  font-family: 'Syne Mono', monospace; font-size: 10px;
+  letter-spacing: 0.08em; padding: 3px 10px; border-radius: 100px;
+  display: none;
+}
+.confirm-match-badge.show { display: block; }
+.confirm-match-badge.ok { color: #27c93f; background: rgba(39,201,63,0.1); border: 1px solid rgba(39,201,63,0.25); }
+.confirm-match-badge.no { color: var(--red); background: var(--red-dim); border: 1px solid var(--border-red); }
+
+/* ── ACTION BUTTONS ── */
+.actions {
+  margin-top: 4px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.btn-delete {
+  width: 100%;
+  font-family: 'Orbitron', monospace; font-size: 11px;
+  font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--white); background: var(--red);
+  border: none; border-radius: 6px;
+  padding: 16px;
+  cursor: not-allowed;
+  opacity: 0.35;
+  transition: opacity 0.2s, box-shadow 0.2s, transform 0.1s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.btn-delete.active {
+  cursor: pointer; opacity: 1;
+}
+.btn-delete.active:hover {
+  box-shadow: 0 0 28px rgba(255,60,60,0.4);
+  transform: translateY(-1px);
+}
+.btn-delete.active:active { transform: translateY(0); }
+
+.btn-cancel {
+  width: 100%;
+  font-family: 'Orbitron', monospace; font-size: 11px;
+  font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--muted); background: transparent;
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 15px; cursor: pointer; text-decoration: none;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-cancel:hover { border-color: rgba(0,255,231,0.3); color: var(--neon); }
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(8,8,16,0.88);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border-red);
+  border-radius: 16px;
+  padding: 36px 32px;
+  max-width: 420px; width: 100%;
+  text-align: center;
+  transform: scale(0.94) translateY(12px);
+  transition: transform 0.25s;
+  box-shadow: 0 0 60px rgba(255,60,60,0.12);
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+
+.modal-icon { font-size: 48px; margin-bottom: 20px; display: block; }
+.modal-title {
+  font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 900;
+  letter-spacing: -0.3px; color: var(--white); margin-bottom: 12px;
+}
+.modal-title em { font-style: normal; color: var(--red); }
+.modal-body {
+  font-size: 14px; line-height: 1.7; color: var(--muted); margin-bottom: 28px;
+}
+.modal-countdown {
+  font-family: 'Orbitron', monospace; font-size: 36px; font-weight: 900;
+  color: var(--red); margin: 16px 0;
+  text-shadow: 0 0 20px var(--red-glow);
+}
+.modal-actions { display: flex; flex-direction: column; gap: 10px; }
+.modal-confirm {
+  font-family: 'Orbitron', monospace; font-size: 11px;
+  font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--white); background: var(--red);
+  border: none; border-radius: 6px; padding: 15px;
+  cursor: pointer; transition: box-shadow 0.2s; width: 100%;
+  opacity: 0.4; pointer-events: none;
+}
+.modal-confirm.ready { opacity: 1; pointer-events: all; }
+.modal-confirm.ready:hover { box-shadow: 0 0 24px rgba(255,60,60,0.4); }
+.modal-cancel-btn {
+  font-family: 'Orbitron', monospace; font-size: 11px;
+  font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--muted); background: transparent;
+  border: 1px solid var(--border); border-radius: 6px; padding: 14px;
+  cursor: pointer; transition: color 0.15s, border-color 0.15s; width: 100%;
+}
+.modal-cancel-btn:hover { color: var(--neon); border-color: rgba(0,255,231,0.3); }
+
+/* ── SUCCESS STATE ── */
+.success-screen {
+  display: none;
+  text-align: center;
+  padding: 60px 0;
+  opacity: 0; animation: fade-up 0.6s 0.1s forwards;
+}
+.success-screen.show { display: block; }
+.success-icon { font-size: 56px; display: block; margin-bottom: 24px; }
+.success-title {
+  font-family: 'Orbitron', monospace; font-size: 26px; font-weight: 900;
+  letter-spacing: -0.5px; color: var(--white); margin-bottom: 12px;
+}
+.success-sub { font-size: 15px; line-height: 1.7; color: var(--muted); margin-bottom: 32px; }
+.success-redirect {
+  font-family: 'Syne Mono', monospace; font-size: 12px;
+  color: var(--faint); letter-spacing: 0.1em;
+}
+.success-bar-wrap {
+  width: 200px; height: 2px; background: var(--border);
+  border-radius: 100px; margin: 12px auto 0; overflow: hidden;
+}
+.success-bar {
+  height: 100%; background: var(--neon); border-radius: 100px;
+  width: 0; animation: progress-fill 4s 0.5s linear forwards;
+}
+@keyframes progress-fill { to { width: 100%; } }
+
+/* ── FOOTER STRIP ── */
+.page-footer {
+  margin-top: 40px; text-align: center;
+  opacity: 0; animation: fade-up 0.5s 0.7s forwards;
+}
+.footer-links-row {
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+  flex-wrap: wrap;
+}
+.footer-links-row a {
+  font-family: 'Syne Mono', monospace; font-size: 11px;
+  color: var(--faint); text-decoration: none; letter-spacing: 0.08em;
+  text-transform: uppercase; transition: color 0.15s;
+}
+.footer-links-row a:hover { color: var(--neon); }
+.footer-sep { color: rgba(255,255,255,0.1); font-size: 10px; }
+.footer-copy {
+  margin-top: 12px; font-family: 'Syne Mono', monospace;
+  font-size: 10px; color: rgba(238,240,255,0.12); letter-spacing: 0.08em;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  nav { padding: 16px 20px; }
+  .logo-text { display: none; }
+  .page-wrap { padding: 90px 16px 60px; }
+  .modal { padding: 28px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="fiddlet-studio-index.html">
+    <div class="logo-mark">F</div>
+    <span class="logo-text">Fiddlet <span>Studio</span></span>
+  </a>
+  <a class="nav-back" href="fiddlet-studio-index.html">Back to Home</a>
+</nav>
+
+<div class="page-orb"></div>
+<div class="page-grid"></div>
+
+<div class="page-wrap">
+  <div class="page-inner">
+
+    <!-- MAIN FLOW -->
+    <div id="main-flow">
+
+      <!-- BREADCRUMB -->
+      <div class="breadcrumb">
+        <a href="#">Account</a>
+        <span class="breadcrumb-sep">›</span>
+        <a href="#">Settings</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">Delete Account</span>
+      </div>
+
+      <!-- HEADER -->
+      <div class="warning-header">
+        <div class="warning-icon-wrap">
+          <span class="warning-icon">⚠</span>
+        </div>
+        <div class="warning-eyebrow">Danger Zone</div>
+        <h1 class="warning-title">Delete your<br><em>account</em></h1>
+        <p class="warning-sub">This action is permanent and cannot be undone. Please read everything below before proceeding.</p>
+      </div>
+
+      <!-- ACCOUNT CARD -->
+      <div class="account-card">
+        <div class="account-avatar">PL</div>
+        <div class="account-info">
+          <div class="account-name">Player One</div>
+          <div class="account-email">player@fiddlet.gg</div>
+        </div>
+        <span class="account-badge">Active</span>
+      </div>
+
+      <!-- CONSEQUENCES -->
+      <div class="consequences-card">
+        <div class="consequences-title">What you will lose</div>
+        <div class="consequence-list">
+          <div class="consequence-item"><div class="consequence-dot"></div><span>All game progress, scores, and streaks across Wordlet and every Fiddlet game</span></div>
+          <div class="consequence-item"><div class="consequence-dot"></div><span>Your position on all leaderboards and achievement history</span></div>
+          <div class="consequence-item"><div class="consequence-dot"></div><span>Access to any purchases or unlockable content tied to this account</span></div>
+          <div class="consequence-item"><div class="consequence-dot"></div><span>Your username — it may become available to others</span></div>
+          <div class="consequence-item"><div class="consequence-dot"></div><span>All saved preferences, notification settings, and connected accounts</span></div>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="form-card-title">Confirm deletion</div>
+        </div>
+        <div class="form-body">
+
+          <!-- Reason -->
+          <div class="field">
+            <label class="field-label" for="reason">Reason for leaving <span>*</span></label>
+            <select class="field-select" id="reason">
+              <option value="" disabled selected>Select a reason...</option>
+              <option value="not-using">I no longer use the app</option>
+              <option value="too-many-emails">Too many notifications / emails</option>
+              <option value="privacy">Privacy concerns</option>
+              <option value="technical">Technical issues</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <!-- Feedback -->
+          <div class="field">
+            <label class="field-label" for="feedback">Anything we could have done better?</label>
+            <textarea class="field-input" id="feedback" rows="3" placeholder="Optional — your feedback helps us improve..." style="resize:vertical;"></textarea>
+          </div>
+
+          <div class="form-divider"></div>
+
+          <!-- Confirm username -->
+          <div class="field">
+            <label class="field-label" for="confirm-name">Type your username to confirm <span>*</span></label>
+            <div class="confirm-wrap">
+              <input class="field-input" id="confirm-name" type="text" placeholder="Player One" autocomplete="off" style="padding-right: 90px;" />
+              <div class="confirm-match-badge" id="match-badge"></div>
+            </div>
+            <span class="field-hint">Type exactly: <strong style="color:var(--white);font-family:'Syne Mono',monospace;">Player One</strong></span>
+          </div>
+
+          <!-- Checkbox -->
+          <label class="checkbox-row" id="checkbox-row">
+            <div class="checkbox-box" id="checkbox-box">
+              <span class="checkbox-check">✓</span>
+            </div>
+            <span class="checkbox-label">I understand that deleting my account is <strong>permanent and irreversible</strong>. All my data will be erased within 30 days.</span>
+          </label>
+
+          <div class="form-divider"></div>
+
+          <!-- Actions -->
+          <div class="actions">
+            <button class="btn-delete" id="delete-btn" disabled>
+              <span>⚠</span> Permanently Delete Account
+            </button>
+            <a href="fiddlet-studio-index.html" class="btn-cancel">Cancel — Keep My Account</a>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- FOOTER LINKS -->
+      <div class="page-footer">
+        <div class="footer-links-row">
+          <a href="#">Privacy Policy</a>
+          <span class="footer-sep">·</span>
+          <a href="#">Terms of Service</a>
+          <span class="footer-sep">·</span>
+          <a href="#">Support</a>
+          <span class="footer-sep">·</span>
+          <a href="#">Contact Us</a>
+        </div>
+        <div class="footer-copy">© 2026 Fiddlet Studio · All rights reserved</div>
+      </div>
+
+    </div><!-- /main-flow -->
+
+    <!-- SUCCESS STATE -->
+    <div class="success-screen" id="success-screen">
+      <span class="success-icon">👋</span>
+      <h2 class="success-title">Account Deleted</h2>
+      <p class="success-sub">Your account has been scheduled for deletion. All personal data will be permanently erased within 30 days. Thanks for playing with us.</p>
+      <div class="success-redirect">Redirecting you home...</div>
+      <div class="success-bar-wrap"><div class="success-bar"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <span class="modal-icon">💀</span>
+    <h2 class="modal-title">Last <em>chance.</em></h2>
+    <p class="modal-body">You're about to permanently delete <strong style="color:var(--white);">Player One</strong>. This cannot be undone. Your data will be gone forever.</p>
+    <div class="modal-countdown" id="countdown">5</div>
+    <div class="modal-actions">
+      <button class="modal-confirm" id="modal-confirm">Yes, Delete Everything</button>
+      <button class="modal-cancel-btn" id="modal-cancel">No, Keep My Account</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const USERNAME = 'Player One';
+  const confirmInput = document.getElementById('confirm-name');
+  const matchBadge = document.getElementById('match-badge');
+  const checkboxBox = document.getElementById('checkbox-box');
+  const checkboxRow = document.getElementById('checkbox-row');
+  const deleteBtn = document.getElementById('delete-btn');
+  const modal = document.getElementById('modal');
+  const modalConfirm = document.getElementById('modal-confirm');
+  const modalCancel = document.getElementById('modal-cancel');
+  const countdownEl = document.getElementById('countdown');
+  const reasonSelect = document.getElementById('reason');
+  const successScreen = document.getElementById('success-screen');
+  const mainFlow = document.getElementById('main-flow');
+
+  let checked = false;
+  let countdownTimer = null;
+
+  function checkForm() {
+    const nameMatch = confirmInput.value.trim() === USERNAME;
+    const reasonFilled = reasonSelect.value !== '';
+    const allGood = nameMatch && checked && reasonFilled;
+    deleteBtn.disabled = !allGood;
+    deleteBtn.classList.toggle('active', allGood);
+  }
+
+  confirmInput.addEventListener('input', () => {
+    const val = confirmInput.value.trim();
+    if (val === '') {
+      matchBadge.className = 'confirm-match-badge';
+      matchBadge.textContent = '';
+    } else if (val === USERNAME) {
+      matchBadge.className = 'confirm-match-badge show ok';
+      matchBadge.textContent = 'MATCH';
+    } else {
+      matchBadge.className = 'confirm-match-badge show no';
+      matchBadge.textContent = 'NO MATCH';
+    }
+    checkForm();
+  });
+
+  checkboxRow.addEventListener('click', () => {
+    checked = !checked;
+    checkboxBox.classList.toggle('checked', checked);
+    checkForm();
+  });
+
+  reasonSelect.addEventListener('change', checkForm);
+
+  deleteBtn.addEventListener('click', () => {
+    if (deleteBtn.disabled) return;
+    openModal();
+  });
+
+  function openModal() {
+    modal.classList.add('open');
+    let count = 5;
+    countdownEl.textContent = count;
+    modalConfirm.classList.remove('ready');
+
+    countdownTimer = setInterval(() => {
+      count--;
+      countdownEl.textContent = count;
+      if (count <= 0) {
+        clearInterval(countdownTimer);
+        countdownEl.textContent = '';
+        modalConfirm.classList.add('ready');
+      }
+    }, 1000);
+  }
+
+  function closeModal() {
+    modal.classList.remove('open');
+    clearInterval(countdownTimer);
+    countdownEl.textContent = '5';
+    modalConfirm.classList.remove('ready');
+  }
+
+  modalCancel.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  modalConfirm.addEventListener('click', () => {
+    if (!modalConfirm.classList.contains('ready')) return;
+    modal.classList.remove('open');
+    mainFlow.style.display = 'none';
+    successScreen.classList.add('show');
+    // redirect after 4.5s
+    setTimeout(() => {
+      window.location.href = 'fiddlet-studio-index.html';
+    }, 4500);
+  });
+</script>
+</body>
+</html>
