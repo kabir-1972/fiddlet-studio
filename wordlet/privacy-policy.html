@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a18;
+    --ink-muted: #5a5a54;
+    --ink-faint: #9a9a90;
+    --cream: #f9f6f0;
+    --cream-dark: #ede9e0;
+    --gold: #c9a84c;
+    --gold-light: #f0e2b8;
+    --teal: #2a7a6e;
+    --teal-light: #d4ede9;
+    --border: rgba(26,26,24,0.12);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HERO */
+  .hero {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 72px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 360px; height: 360px;
+    border-radius: 50%;
+    background: rgba(201,168,76,0.08);
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(42,122,110,0.1);
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.35);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+  }
+  .hero-badge::before { content: '⬡'; font-size: 10px; }
+
+  .logo-line {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .app-icon {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--gold) 0%, #e8c96a 100%);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -1px;
+    flex-shrink: 0;
+  }
+  .app-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 60px);
+    font-weight: 400;
+    line-height: 1.1;
+    color: #fff;
+    letter-spacing: -1.5px;
+    max-width: 580px;
+    margin-bottom: 20px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .meta-item {
+    font-size: 12px;
+    color: rgba(249,246,240,0.5);
+    letter-spacing: 0.04em;
+  }
+  .meta-item strong {
+    color: rgba(249,246,240,0.85);
+    font-weight: 500;
+  }
+
+  /* NAV STRIP */
+  .nav-strip {
+    background: var(--cream-dark);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    gap: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-item {
+    display: inline-block;
+    padding: 14px 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .nav-item:hover { color: var(--ink); border-bottom-color: var(--gold); }
+
+  /* INTRO BAND */
+  .intro-band {
+    background: var(--teal-light);
+    border-bottom: 1px solid rgba(42,122,110,0.2);
+    padding: 28px 40px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .intro-icon {
+    width: 44px; height: 44px;
+    background: var(--teal);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+  .intro-band p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #1a3d38;
+    max-width: 700px;
+  }
+  .intro-band strong { font-weight: 500; }
+
+  /* CONTENT */
+  .content-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 40px 80px;
+  }
+
+  /* SECTION */
+  .section {
+    margin-top: 56px;
+    padding-bottom: 56px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+  .section:last-of-type { border-bottom: none; }
+
+  @media (max-width: 680px) {
+    .section { grid-template-columns: 1fr; gap: 16px; }
+    .hero { padding: 48px 24px 44px; }
+    .intro-band { padding: 20px 24px; }
+    .content-wrap { padding: 0 24px 60px; }
+    .nav-strip { padding: 0 24px; }
+  }
+
+  .section-label {
+    position: sticky;
+    top: 24px;
+  }
+  .section-num {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink);
+    letter-spacing: -0.4px;
+  }
+  .section-title em { font-style: italic; font-weight: 400; }
+
+  .section-body { }
+  .section-body p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #3a3a36;
+    margin-bottom: 16px;
+  }
+  .section-body p:last-child { margin-bottom: 0; }
+
+  /* ITEM LIST */
+  .item-list {
+    list-style: none;
+    margin: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .item-list li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #3a3a36;
+  }
+  .item-list li::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+    margin-top: 8px;
+  }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    background: var(--gold-light);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 20px 0;
+  }
+  .highlight-box p {
+    font-size: 14px !important;
+    color: #4a3a10 !important;
+    margin: 0 !important;
+  }
+  .highlight-box strong { font-weight: 500; }
+
+  /* DATA TABLE */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 13.5px;
+  }
+  .data-table th {
+    text-align: left;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 8px 16px;
+    background: var(--cream-dark);
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: #3a3a36;
+    line-height: 1.5;
+    vertical-align: top;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(201,168,76,0.04); }
+
+  /* CONTACT CARD */
+  .contact-card {
+    background: var(--ink);
+    border-radius: 16px;
+    padding: 32px;
+    margin-top: 24px;
+    color: var(--cream);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .contact-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .contact-card p { font-size: 14px; color: rgba(249,246,240,0.6); }
+  .contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gold);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 12px 24px;
+    border-radius: 100px;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  /* FOOTER */
+  .policy-footer {
+    background: var(--cream-dark);
+    border-top: 1px solid var(--border);
+    padding: 32px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .footer-icon {
+    width: 28px; height: 28px;
+    background: var(--gold);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .footer-meta { font-size: 12px; color: var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Privacy Policy</div>
+  <div class="logo-line">
+    <div class="app-icon">W</div>
+    <div class="app-name">Wordlet</div>
+  </div>
+  <h1>Your privacy,<br><em>genuinely</em> respected.</h1>
+  <div class="hero-meta">
+    <span class="meta-item"><strong>Effective:</strong> April 4, 2026</span>
+    <span class="meta-item"><strong>Last updated:</strong> April 4, 2026</span>
+    <span class="meta-item"><strong>Version:</strong> 1.0</span>
+  </div>
+</div>
+
+<!-- NAV STRIP -->
+<div class="nav-strip">
+  <span class="nav-item">Collection</span>
+  <span class="nav-item">Usage</span>
+  <span class="nav-item">Sharing</span>
+  <span class="nav-item">Storage</span>
+  <span class="nav-item">Your rights</span>
+  <span class="nav-item">Children</span>
+  <span class="nav-item">Contact</span>
+</div>
+
+<!-- INTRO BAND -->
+<div class="intro-band">
+  <div class="intro-icon">🔐</div>
+  <p>This policy explains how <strong>Wordlet</strong> collects, uses, and protects your personal information. We believe in plain language — so we've written this to be actually readable. If something is unclear, reach out and we'll explain it.</p>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap">
+
+  <!-- 1 -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">01 — Overview</div>
+      <div class="section-title">Who we<br><em>are</em></div>
+    </div>
+    <div class="section-body">
+      <p>Wordlet is a word puzzle application designed to make vocabulary fun, engaging, and mentally stimulating. This Privacy Policy applies to the Wordlet mobile application and any associated services we provide.</p>
+      <p>We are the data controller responsible for your personal information. By using Wordlet, you agree to the practices described in this document.</p>
+      <div class="highlight-box">
+        <p><strong>The short version:</strong> We collect only what we need to run the app, we don't sell your data, and we give you real control over your information.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">02 — Collection</div>
+      <div class="section-title">What we<br><em>collect</em></div>
+    </div>
+    <div class="section-body">
+      <p>We collect information in two ways — what you provide directly, and what we observe when you use the app.</p>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>Data type</th><th>Examples</th><th>How collected</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Account info</strong></td>
+            <td>Name, email address</td>
+            <td>You provide it at signup</td>
+          </tr>
+          <tr>
+            <td><strong>Game progress</strong></td>
+            <td>Scores, streaks, completed puzzles</td>
+            <td>Recorded as you play</td>
+          </tr>
+          <tr>
+            <td><strong>Device info</strong></td>
+            <td>OS version, device model, locale</td>
+            <td>Collected automatically</td>
+          </tr>
+          <tr>
+            <td><strong>Usage data</strong></td>
+            <td>Features used, session duration</td>
+            <td>Collected automatically</td>
+          </tr>
+          <tr>
+            <td><strong>Crash logs</strong></td>
+            <td>Error traces, app state at crash</td>
+            <td>Collected automatically</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>We do <strong>not</strong> collect payment information directly — all purchases are processed by Apple App Store or Google Play. We never access your device camera, microphone, or contacts.</p>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">03 — Usage</div>
+      <div class="section-title">How we<br><em>use it</em></div>
+    </div>
+    <div class="section-body">
+      <p>Every piece of data we collect has a specific, defined purpose. We don't collect data speculatively or "just in case."</p>
+      <ul class="item-list">
+        <li>Operate and maintain your account and sync your progress across devices</li>
+        <li>Personalize your experience — difficulty calibration, word selection, streaks</li>
+        <li>Diagnose bugs and improve app stability using crash and error reports</li>
+        <li>Send you optional notifications (only if you've enabled them)</li>
+        <li>Comply with legal obligations and enforce our terms of service</li>
+        <li>Conduct aggregate, anonymized analytics to understand how features perform</li>
+      </ul>
+      <p>We never use your data to build advertising profiles or sell insights to third parties.</p>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">04 — Sharing</div>
+      <div class="section-title">Who sees<br><em>your data</em></div>
+    </div>
+    <div class="section-body">
+      <p>We don't sell, rent, or trade your personal information. Period. We share data only in limited circumstances:</p>
+      <ul class="item-list">
+        <li><strong>Service providers</strong> who help us operate Wordlet — cloud hosting, crash analytics, and customer support tools — under strict data processing agreements</li>
+        <li><strong>Legal requirements</strong> — if required by law, court order, or to protect the rights and safety of our users</li>
+        <li><strong>Business transfers</strong> — in the unlikely event of a merger or acquisition, your data would transfer with appropriate notice and the same privacy protections</li>
+      </ul>
+      <div class="highlight-box">
+        <p><strong>Leaderboards:</strong> If you choose to participate in public leaderboards, your username and score are visible to other players. You can opt out in Settings → Privacy at any time.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">05 — Storage</div>
+      <div class="section-title">How we<br><em>protect it</em></div>
+    </div>
+    <div class="section-body">
+      <p>Your data is stored on secure servers with industry-standard encryption at rest (AES-256) and in transit (TLS 1.3). We apply role-based access controls, so only team members who need your data to do their job can access it.</p>
+      <p>We retain your account data for as long as your account is active. If you delete your account, we delete your personal data within 30 days, except where retention is required by law.</p>
+      <p>Anonymized, aggregated analytics data may be retained indefinitely — but it cannot be traced back to you.</p>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">06 — Your rights</div>
+      <div class="section-title">You're in<br><em>control</em></div>
+    </div>
+    <div class="section-body">
+      <p>Depending on your location, you may have the following rights regarding your personal data:</p>
+      <ul class="item-list">
+        <li><strong>Access</strong> — request a copy of the personal data we hold about you</li>
+        <li><strong>Correction</strong> — ask us to correct inaccurate or incomplete information</li>
+        <li><strong>Deletion</strong> — request erasure of your data ("right to be forgotten")</li>
+        <li><strong>Portability</strong> — receive your data in a machine-readable format</li>
+        <li><strong>Objection</strong> — object to certain types of processing</li>
+        <li><strong>Restriction</strong> — ask us to limit how we process your data</li>
+      </ul>
+      <p>Most actions can be taken directly in the app under Settings → Privacy → My Data. For other requests, contact us and we'll respond within 30 days.</p>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">07 — Children</div>
+      <div class="section-title">Under<br><em>13 policy</em></div>
+    </div>
+    <div class="section-body">
+      <p>Wordlet is not directed at children under the age of 13. We do not knowingly collect personal information from children under 13. If we discover that we have inadvertently collected such data, we will delete it promptly.</p>
+      <p>If you are a parent or guardian and believe your child has provided us with personal information, please contact us immediately and we will take action within 48 hours.</p>
+    </div>
+  </div>
+
+  <!-- 8 -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">08 — Changes</div>
+      <div class="section-title">Policy<br><em>updates</em></div>
+    </div>
+    <div class="section-body">
+      <p>We may update this Privacy Policy from time to time. When we make significant changes, we'll notify you via in-app notification or email at least 14 days before the changes take effect.</p>
+      <p>Continued use of Wordlet after changes become effective constitutes your acceptance of the updated policy. We'll always keep a changelog of previous versions accessible on request.</p>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="contact-card">
+    <div>
+      <h3>Questions about privacy?</h3>
+      <p>Our team is happy to help — we respond within 2 business days.</p>
+    </div>
+    <a class="contact-link" href="mailto:privacy@wordlet.app">✉ privacy@wordlet.app</a>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="policy-footer">
+  <div class="footer-brand">
+    <div class="footer-icon">W</div>
+    Wordlet
+  </div>
+  <div class="footer-meta">© 2026 Wordlet. All rights reserved. · Version 1.0 · April 4, 2026</div>
+</div>
+
+</body>
+</html>

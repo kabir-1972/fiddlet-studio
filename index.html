@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiddlet Studio — We Make Worlds</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne+Mono&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #080810;
+  --deep: #0d0d1a;
+  --panel: #11111f;
+  --border: rgba(255,255,255,0.07);
+  --neon: #00ffe7;
+  --neon-dim: rgba(0,255,231,0.15);
+  --neon-glow: rgba(0,255,231,0.4);
+  --orange: #ff6b2b;
+  --orange-dim: rgba(255,107,43,0.15);
+  --white: #eef0ff;
+  --muted: rgba(238,240,255,0.45);
+  --faint: rgba(238,240,255,0.18);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--black);
+  color: var(--white);
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* ── SCANLINES OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.07) 2px,
+    rgba(0,0,0,0.07) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* ── NOISE GRAIN ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: -200%;
+  width: 400%;
+  height: 400%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.4;
+  animation: grain 0.4s steps(1) infinite;
+}
+@keyframes grain {
+  0%,100%{transform:translate(0,0)}
+  10%{transform:translate(-2%,-3%)}
+  20%{transform:translate(3%,2%)}
+  30%{transform:translate(-1%,4%)}
+  40%{transform:translate(2%,-1%)}
+  50%{transform:translate(-3%,3%)}
+  60%{transform:translate(1%,-2%)}
+  70%{transform:translate(-2%,1%)}
+  80%{transform:translate(3%,-3%)}
+  90%{transform:translate(-1%,2%)}
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 20px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to bottom, rgba(8,8,16,0.95), transparent);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.logo-mark {
+  width: 36px; height: 36px;
+  border: 2px solid var(--neon);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--neon);
+  box-shadow: 0 0 12px var(--neon-glow), inset 0 0 12px rgba(0,255,231,0.05);
+  animation: pulse-logo 3s ease-in-out infinite;
+}
+@keyframes pulse-logo {
+  0%,100%{box-shadow:0 0 12px var(--neon-glow),inset 0 0 12px rgba(0,255,231,0.05)}
+  50%{box-shadow:0 0 24px var(--neon-glow),0 0 48px rgba(0,255,231,0.15),inset 0 0 18px rgba(0,255,231,0.08)}
+}
+.logo-text {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.logo-text span { color: var(--neon); }
+
+.nav-links {
+  display: flex;
+  gap: 36px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 0;
+  width: 0; height: 1px;
+  background: var(--neon);
+  transition: width 0.2s;
+}
+.nav-links a:hover { color: var(--neon); }
+.nav-links a:hover::after { width: 100%; }
+
+.nav-cta {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--black);
+  background: var(--neon);
+  padding: 10px 22px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.1s;
+  text-decoration: none;
+}
+.nav-cta:hover {
+  box-shadow: 0 0 20px var(--neon-glow);
+  transform: translateY(-1px);
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 120px 48px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* BIG GRID BG */
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,231,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,231,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* ORB */
+.hero-orb {
+  position: absolute;
+  top: 15%; right: 5%;
+  width: 520px; height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(0,255,231,0.12), rgba(255,107,43,0.06) 50%, transparent 70%);
+  filter: blur(40px);
+  animation: orb-drift 8s ease-in-out infinite alternate;
+}
+@keyframes orb-drift {
+  from { transform: translate(0,0) scale(1); }
+  to { transform: translate(-30px, 20px) scale(1.05); }
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  color: var(--neon);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fade-up 0.6s 0.2s forwards;
+}
+.hero-eyebrow::before {
+  content: '';
+  width: 32px; height: 1px;
+  background: var(--neon);
+  box-shadow: 0 0 6px var(--neon);
+}
+
+.hero-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(52px, 8vw, 108px);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -2px;
+  max-width: 900px;
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: fade-up 0.7s 0.35s forwards;
+}
+.hero-title .line-1 { display: block; color: var(--white); }
+.hero-title .line-2 {
+  display: block;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--neon);
+  filter: drop-shadow(0 0 8px var(--neon));
+}
+.hero-title .line-3 { display: block; color: var(--orange); }
+
+.hero-sub {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 480px;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: fade-up 0.7s 0.5s forwards;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fade-up 0.7s 0.65s forwards;
+}
+
+.btn-primary {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--black);
+  background: var(--neon);
+  padding: 16px 36px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: box-shadow 0.2s, transform 0.1s;
+}
+.btn-primary:hover {
+  box-shadow: 0 0 32px var(--neon-glow);
+  transform: translateY(-2px);
+}
+.btn-primary::after { content: '→'; }
+
+.btn-secondary {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: transparent;
+  padding: 16px 36px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-secondary:hover { border-color: var(--neon); color: var(--neon); }
+
+/* SCROLL INDICATOR */
+.scroll-hint {
+  position: absolute;
+  bottom: 36px; left: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 10px;
+  color: var(--faint);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fade-up 0.7s 1s forwards;
+}
+.scroll-line {
+  width: 40px; height: 1px;
+  background: var(--faint);
+  position: relative;
+  overflow: hidden;
+}
+.scroll-line::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: var(--neon);
+  animation: scan-line 2s ease-in-out infinite;
+}
+@keyframes scan-line { to { left: 200%; } }
+
+/* ── TICKER ── */
+.ticker-wrap {
+  background: var(--neon);
+  padding: 12px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.ticker-inner {
+  display: inline-flex;
+  animation: ticker 20s linear infinite;
+  gap: 0;
+}
+.ticker-item {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--black);
+  padding: 0 32px;
+}
+.ticker-sep {
+  color: rgba(8,8,16,0.35);
+  padding: 0 4px;
+}
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── STATS ── */
+.stats-bar {
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 48px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+.stat-item {
+  padding: 0 32px;
+  border-right: 1px solid var(--border);
+  text-align: center;
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 900;
+  color: var(--neon);
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── GAMES ── */
+.games-section {
+  padding: 100px 48px;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 56px;
+}
+.section-eyebrow {
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  color: var(--neon);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.section-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 900;
+  color: var(--white);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.section-link {
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  color: var(--neon);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: gap 0.2s;
+}
+.section-link:hover { gap: 14px; }
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.game-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+  text-decoration: none;
+  display: block;
+}
+.game-card:hover {
+  border-color: rgba(0,255,231,0.3);
+  transform: translateY(-4px);
+}
+.game-card:hover .game-thumb::after { opacity: 1; }
+
+.game-thumb {
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+}
+.game-thumb::after {
+  content: 'PLAY NOW →';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,255,231,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--neon);
+  letter-spacing: 0.15em;
+  opacity: 0;
+  transition: opacity 0.2s;
+  backdrop-filter: blur(2px);
+}
+
+/* Fake game art using CSS */
+.thumb-wordlet {
+  background:
+    radial-gradient(circle at 70% 30%, rgba(0,255,231,0.2), transparent 60%),
+    radial-gradient(circle at 20% 80%, rgba(255,107,43,0.15), transparent 50%),
+    linear-gradient(135deg, #0a0a1a 0%, #111130 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.thumb-wordlet-inner {
+  display: grid;
+  grid-template-columns: repeat(5, 44px);
+  grid-template-rows: repeat(3, 44px);
+  gap: 4px;
+}
+.tile {
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron', monospace;
+  font-size: 16px;
+  font-weight: 700;
+}
+.tile-g { background: rgba(0,255,231,0.15); border: 1px solid rgba(0,255,231,0.3); color: var(--neon); }
+.tile-y { background: rgba(255,200,50,0.15); border: 1px solid rgba(255,200,50,0.3); color: #ffc832; }
+.tile-e { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--faint); }
+
+.thumb-drift {
+  background:
+    radial-gradient(circle at 50% 100%, rgba(255,107,43,0.25), transparent 60%),
+    linear-gradient(180deg, #080814 0%, #1a0808 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.drift-road {
+  width: 80px;
+  height: 160px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+.drift-car {
+  width: 28px; height: 44px;
+  background: var(--orange);
+  border-radius: 6px 6px 3px 3px;
+  position: relative;
+  box-shadow: 0 0 20px rgba(255,107,43,0.5);
+}
+.drift-car::before {
+  content: '';
+  position: absolute;
+  top: 6px; left: 4px; right: 4px; height: 16px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 3px;
+}
+
+.thumb-maze {
+  background: linear-gradient(135deg, #050510 0%, #0a1020 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.maze-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 20px);
+  grid-template-rows: repeat(6, 20px);
+  gap: 2px;
+}
+.maze-cell {
+  border-radius: 2px;
+}
+.mc-wall { background: rgba(0,255,231,0.12); border: 1px solid rgba(0,255,231,0.2); }
+.mc-path { background: transparent; }
+.mc-active { background: rgba(0,255,231,0.5); box-shadow: 0 0 6px var(--neon); }
+.mc-dot { background: rgba(255,107,43,0.7); box-shadow: 0 0 6px var(--orange); }
+
+.game-info { padding: 20px 22px 22px; }
+.game-tag {
+  display: inline-block;
+  font-family: 'Syne Mono', monospace;
+  font-size: 9px;
+  color: var(--neon);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: var(--neon-dim);
+  border: 1px solid rgba(0,255,231,0.2);
+  padding: 3px 10px;
+  border-radius: 100px;
+  margin-bottom: 10px;
+}
+.game-name {
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.3px;
+  margin-bottom: 8px;
+}
+.game-desc {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* ── ABOUT SECTION ── */
+.about-section {
+  padding: 100px 48px;
+  background: var(--deep);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.about-label {
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  color: var(--orange);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.about-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(28px, 3.5vw, 44px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  color: var(--white);
+  margin-bottom: 28px;
+}
+.about-title span { color: var(--orange); }
+.about-body {
+  font-size: 15px;
+  line-height: 1.78;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.about-body:last-of-type { margin-bottom: 36px; }
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tag {
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 100px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.tag:hover { border-color: var(--orange); color: var(--orange); }
+
+/* TERMINAL */
+.terminal {
+  background: var(--black);
+  border: 1px solid rgba(0,255,231,0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0,255,231,0.06);
+}
+.terminal-bar {
+  background: var(--panel);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.t-dot { width: 10px; height: 10px; border-radius: 50%; }
+.t-dot-r { background: #ff5f56; }
+.t-dot-y { background: #ffbd2e; }
+.t-dot-g { background: #27c93f; }
+.terminal-title {
+  margin-left: 8px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.terminal-body {
+  padding: 24px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 13px;
+  line-height: 2;
+}
+.t-prompt { color: var(--neon); }
+.t-cmd { color: var(--white); }
+.t-output { color: var(--muted); padding-left: 16px; }
+.t-highlight { color: var(--orange); }
+.t-cursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--neon);
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── NEWSLETTER ── */
+.newsletter-section {
+  padding: 100px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.newsletter-section::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,255,231,0.05), transparent 70%);
+  pointer-events: none;
+}
+.newsletter-eyebrow {
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  color: var(--neon);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.newsletter-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(28px, 4vw, 52px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1.05;
+  color: var(--white);
+  max-width: 620px;
+  margin: 0 auto 20px;
+}
+.newsletter-title em { font-style: normal; color: var(--neon); }
+.newsletter-sub {
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 40px;
+}
+.newsletter-form {
+  display: flex;
+  gap: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  border: 1px solid rgba(0,255,231,0.3);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.newsletter-form:focus-within {
+  box-shadow: 0 0 24px rgba(0,255,231,0.15);
+}
+.newsletter-form input {
+  flex: 1;
+  background: rgba(0,255,231,0.04);
+  border: none;
+  outline: none;
+  padding: 16px 20px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 13px;
+  color: var(--white);
+  letter-spacing: 0.05em;
+}
+.newsletter-form input::placeholder { color: var(--faint); }
+.newsletter-form button {
+  background: var(--neon);
+  border: none;
+  padding: 16px 28px;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--black);
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.newsletter-form button:hover { opacity: 0.88; }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  padding: 60px 48px 40px;
+}
+.footer-top {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 56px;
+}
+.footer-brand-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-top: 16px;
+  max-width: 280px;
+}
+.footer-col-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 20px;
+}
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.footer-links a {
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s;
+  letter-spacing: 0.03em;
+}
+.footer-links a:hover { color: var(--neon); }
+.footer-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-copy {
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  color: var(--faint);
+  letter-spacing: 0.08em;
+}
+.footer-socials {
+  display: flex;
+  gap: 20px;
+}
+.social-link {
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 0.15s;
+}
+.social-link:hover { color: var(--neon); }
+
+/* ── ANIMATIONS ── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  nav { padding: 18px 28px; }
+  .nav-links, .nav-cta { display: none; }
+  .hero { padding: 100px 28px 60px; }
+  .games-section, .newsletter-section { padding: 72px 28px; }
+  .games-grid { grid-template-columns: 1fr; }
+  .stats-bar { grid-template-columns: repeat(2,1fr); padding: 32px 28px; }
+  .stat-item:nth-child(2) { border-right: none; }
+  .stat-item { padding: 20px 16px; }
+  .about-section { grid-template-columns: 1fr; padding: 72px 28px; gap: 40px; }
+  .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  footer { padding: 48px 28px 32px; }
+  .footer-top { grid-template-columns: 1fr 1fr; }
+  .ticker-item { padding: 0 20px; }
+  .scroll-hint { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="logo-mark">F</div>
+    <span class="logo-text">Fiddlet <span>Studio</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#games">Games</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#">Blog</a></li>
+    <li><a href="#">Careers</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Contact Us</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-orb"></div>
+
+  <div class="hero-eyebrow">Est. 2024 · Independent Studio</div>
+
+  <h1 class="hero-title">
+    <span class="line-1">We Build</span>
+    <span class="line-2">Worlds</span>
+    <span class="line-3">Worth Playing.</span>
+  </h1>
+
+  <p class="hero-sub">Fiddlet Studio crafts games that stick — small teams, big ideas, and obsessive attention to what makes play feel alive.</p>
+
+  <div class="hero-actions">
+    <a href="#games" class="btn-primary">Explore Our Games</a>
+    <a href="#about" class="btn-secondary">Our Story</a>
+  </div>
+
+  <div class="scroll-hint">
+    <span class="scroll-line"></span>
+    Scroll to explore
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker-inner">
+    <span class="ticker-item">Wordlet <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Puzzle Games <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Fiddlet Studio <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Indie Dev <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Mobile &amp; Web <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Level Up <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Play More <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Wordlet <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Puzzle Games <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Fiddlet Studio <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Indie Dev <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Mobile &amp; Web <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Level Up <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Play More <span class="ticker-sep">✦</span></span>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-num">3+</div>
+    <div class="stat-label">Games Released</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">50K+</div>
+    <div class="stat-label">Players Worldwide</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">4.8★</div>
+    <div class="stat-label">Avg. Store Rating</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">2</div>
+    <div class="stat-label">Platforms</div>
+  </div>
+</div>
+
+<!-- GAMES -->
+<section class="games-section" id="games">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow">// Our Games</div>
+      <h2 class="section-title">THE LINEUP</h2>
+    </div>
+    <a href="#" class="section-link">View all games →</a>
+  </div>
+
+  <div class="games-grid">
+    <!-- Wordlet -->
+    <a href="#" class="game-card">
+      <div class="game-thumb thumb-wordlet">
+        <div class="thumb-wordlet-inner">
+          <div class="tile tile-g">W</div>
+          <div class="tile tile-y">O</div>
+          <div class="tile tile-e">R</div>
+          <div class="tile tile-e">D</div>
+          <div class="tile tile-g">S</div>
+
+          <div class="tile tile-e">G</div>
+          <div class="tile tile-g">A</div>
+          <div class="tile tile-e">M</div>
+          <div class="tile tile-g">E</div>
+          <div class="tile tile-y">S</div>
+
+          <div class="tile tile-y">P</div>
+          <div class="tile tile-e">L</div>
+          <div class="tile tile-g">A</div>
+          <div class="tile tile-e">Y</div>
+          <div class="tile tile-g">!</div>
+        </div>
+      </div>
+      <div class="game-info">
+        <span class="game-tag">Word Puzzle</span>
+        <div class="game-name">Wordlet</div>
+        <p class="game-desc">Six tries. Five letters. One daily word. The classic reinvented with a twist that'll keep you coming back.</p>
+      </div>
+    </a>
+
+    <!-- Drift King -->
+    <a href="#" class="game-card">
+      <div class="game-thumb thumb-drift">
+        <div class="drift-road">
+          <div class="drift-car"></div>
+        </div>
+      </div>
+      <div class="game-info">
+        <span class="game-tag" style="color:var(--orange);background:var(--orange-dim);border-color:rgba(255,107,43,0.25);">Racing</span>
+        <div class="game-name">Drift King</div>
+        <p class="game-desc">Neon-soaked streets, razor-sharp corners. Master the drift or burn out trying. Coming soon.</p>
+      </div>
+    </a>
+
+    <!-- Maze Runner -->
+    <a href="#" class="game-card">
+      <div class="game-thumb thumb-maze">
+        <div class="maze-grid">
+          <!-- Row 1 -->
+          <div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div>
+          <!-- Row 2 -->
+          <div class="maze-cell mc-wall"></div><div class="maze-cell mc-active"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-dot"></div><div class="maze-cell mc-wall"></div>
+          <!-- Row 3 -->
+          <div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div>
+          <!-- Row 4 -->
+          <div class="maze-cell mc-wall"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-wall"></div>
+          <!-- Row 5 -->
+          <div class="maze-cell mc-wall"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-path"></div><div class="maze-cell mc-wall"></div>
+          <!-- Row 6 -->
+          <div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div><div class="maze-cell mc-wall"></div>
+        </div>
+      </div>
+      <div class="game-info">
+        <span class="game-tag">Puzzle / Logic</span>
+        <div class="game-name">MazeCraft</div>
+        <p class="game-desc">Infinitely generated mazes with roguelike depth. Find the exit before the walls close in. In development.</p>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-section" id="about">
+  <div>
+    <div class="about-label">// About the Studio</div>
+    <h2 class="about-title">Built by players,<br>for <span>players.</span></h2>
+    <p class="about-body">Fiddlet Studio is a scrappy, independent game studio on a mission to prove that the best games don't need massive budgets — they need genuine passion, sharp design, and a stubborn commitment to fun.</p>
+    <p class="about-body">We make the kind of games that get stuck in your head at 2am. If you've ever lost an hour to a "quick puzzle," you know exactly what we're about.</p>
+    <div class="tag-cloud">
+      <span class="tag">Unity</span>
+      <span class="tag">Godot</span>
+      <span class="tag">Mobile First</span>
+      <span class="tag">Web Games</span>
+      <span class="tag">Indie</span>
+      <span class="tag">Puzzle Design</span>
+      <span class="tag">Procedural Gen</span>
+    </div>
+  </div>
+  <div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="t-dot t-dot-r"></div>
+        <div class="t-dot t-dot-y"></div>
+        <div class="t-dot t-dot-g"></div>
+        <span class="terminal-title">fiddlet-studio ~ bash</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-prompt">~/fiddlet $</span> <span class="t-cmd">cat about.txt</span></div>
+        <div class="t-output">Studio: <span class="t-highlight">Fiddlet Studio</span></div>
+        <div class="t-output">Founded: <span class="t-highlight">2024</span></div>
+        <div class="t-output">Size: <span class="t-highlight">Small but mighty</span></div>
+        <div class="t-output">Mission: <span class="t-highlight">Make great games</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-prompt">~/fiddlet $</span> <span class="t-cmd">ls games/</span></div>
+        <div class="t-output"><span class="t-highlight">wordlet/</span> &nbsp;drift-king/ &nbsp;mazecraft/</div>
+        <div>&nbsp;</div>
+        <div><span class="t-prompt">~/fiddlet $</span> <span class="t-cmd">./run wordlet</span></div>
+        <div class="t-output">Launching <span class="t-highlight">Wordlet</span> v2.1.0...</div>
+        <div class="t-output">Status: <span style="color:#27c93f;">● LIVE</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-prompt">~/fiddlet $</span> <span class="t-cursor"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter-section" id="contact">
+  <div class="newsletter-eyebrow">// Stay in the loop</div>
+  <h2 class="newsletter-title">Never miss a <em>new level.</em></h2>
+  <p class="newsletter-sub">Game launches, behind-the-scenes dev logs, and early access — straight to your inbox.</p>
+  <div class="newsletter-form">
+    <input type="email" placeholder="your@email.com" />
+    <button type="button">Join Now</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="nav-logo" style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+        <div class="logo-mark">F</div>
+        <span class="logo-text" style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--white);letter-spacing:0.15em;text-transform:uppercase;">Fiddlet <span style="color:var(--neon);">Studio</span></span>
+      </div>
+      <p class="footer-brand-desc">Small studio. Big games. We build worlds worth playing — one puzzle, one race, one level at a time.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Games</div>
+      <ul class="footer-links">
+        <li><a href="#">Wordlet</a></li>
+        <li><a href="#">Drift King</a></li>
+        <li><a href="#">MazeCraft</a></li>
+        <li><a href="#">All Games →</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Studio</div>
+      <ul class="footer-links">
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press Kit</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Legal</div>
+      <ul class="footer-links">
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Cookie Policy</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Fiddlet Studio · All rights reserved</span>
+    <div class="footer-socials">
+      <a href="#" class="social-link">Twitter</a>
+      <a href="#" class="social-link">Discord</a>
+      <a href="#" class="social-link">Instagram</a>
+      <a href="#" class="social-link">itch.io</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
